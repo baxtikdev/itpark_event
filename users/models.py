@@ -11,7 +11,7 @@ class User(AbstractUser):
     organization_name = models.CharField(max_length=70, verbose_name=_('Organization'))
     position = models.CharField(max_length=70, verbose_name=_('Position'))
     phone = models.CharField(_('phone'), max_length=255)
-    is_verified = models.BooleanField(_('is verified'), default=False)
+
 
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username": self.username})

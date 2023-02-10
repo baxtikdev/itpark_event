@@ -125,3 +125,4 @@ class DevicesServiceAPIView(viewsets.ModelViewSet):
     serializer_class = DevicesServiceSerializer
     http_method_names = ['post', 'put', 'delete']
     permission_classes = [IsAuthenticated]
+

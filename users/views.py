@@ -9,7 +9,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from allauth.account.models import EmailAddress
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import UpdateAPIView
+from rest_framework.generics import UpdateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -27,6 +27,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 User = get_user_model()
+
 
 class UserViewSet(RetrieveModelMixin, ListAPIView, UpdateModelMixin, GenericViewSet):
     serializer_class = UserSerializer
@@ -51,6 +52,7 @@ class UserViewSet(RetrieveModelMixin, ListAPIView, UpdateModelMixin, GenericView
             serializer = UserSerializer(request.user, context={"request": request})
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 class UserDetailView(DetailView):
     model = User
@@ -95,51 +97,11 @@ class RegisterAPIView(generics.GenericAPIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        check = self.check_user_verify(request)
         if serializer.is_valid(raise_exception=True):
-            if check:
-                serializer.save()
-            else:
-                return Response({'message': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            code, created = Code.objects.get_or_create(user_id=serializer.data['id'])
-            code.save()
-            send_email({'to_email': serializer.data['email'], 'code': code.number})
-            # Todo: send the code by email to user
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            token = self.get_tokens_for_user(serializer.instance)
+            return Response(token, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def check_user_verify(self, request):
-        try:
-            email = request.data.get('email')
-        except:
-            return True
-        if not EmailAddress.objects.filter(email=email).first():
-            user = User.objects.filter(email=email)
-            user.delete()
-            return True
-        else:
-            return False
-
-
-class VerifyCodeView(generics.GenericAPIView):
-    serializer_class = CodeSerializer
-    permission_classes = (AllowAny,)
-    queryset = Code.objects.all()
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            num = Code.objects.filter(user_id=int(serializer.data['user'])).first()
-            if not num:
-                return Response({'error': 'code not found'}, status=status.HTTP_400_BAD_REQUEST)
-            if str(num.number) == str(serializer.data['number']):
-                user = User.objects.filter(id=int(serializer.data['user'])).first()
-                EmailAddress.objects.create(user=user, email=user.email, primary=True, verified=True)
-                token = self.get_tokens_for_user(user)
-                login(request, user)
-                return Response({'Message': 'Successfully activated', 'token': token}, status=status.HTTP_200_OK)
-            return Response({'Message': 'Code is not match'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     def get_tokens_for_user(self, user):
         refresh = RefreshToken.for_user(user)
@@ -166,6 +128,7 @@ class PasswordChangeView(UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = PasswordChangeSerializer
     throttle_scope = 'dj_rest_auth'
+    http_method_names = ['put']
 
     def get_object(self, queryset=None):
         obj = self.request.user
@@ -174,35 +137,25 @@ class PasswordChangeView(UpdateAPIView):
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)
-
         if serializer.is_valid():
-            if not self.object.check_password(serializer.data.get("old_password")):
-                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-
             if serializer.data.get("new_password1") == serializer.data.get("new_password2"):
-                self.object.set_password(serializer.data.get("new_password"))
+                self.object.set_password(serializer.data.get("new_password1"))
                 self.object.save()
-                response = {
-                    'status': 'success',
-                    'code': status.HTTP_200_OK,
-                    'message': 'Password updated successfully',
-                    'data': []
-                }
-                return Response(response)
+                return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResetPasswordView(viewsets.ModelViewSet):
+class ResetPasswordView(CreateAPIView):
     queryset = ChangedPassword.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = GetEmailSerializer
-    http_method_names = ['post']
+    # http_method_names = ['post']
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             password = self.generate_password()
-            user = User.objects.filter(email=serializer.data['email']).first()
+            user = User.objects.filter(email=serializer.data.get('email')).first()
             if not user:
                 return Response(status=status.HTTP_404_NOT_FOUND)
             changed_users = ChangedPassword.objects.filter(user=user).first()
@@ -213,7 +166,7 @@ class ResetPasswordView(viewsets.ModelViewSet):
                 ChangedPassword.objects.create(user=user, password=password)
             user.set_password(password)
             user.save()
-            send_email({'to_email': serializer.data['email'], 'code': password})
+            send_email({'to_email': user.email, 'code': password})
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
