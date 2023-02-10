@@ -22,6 +22,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
+from users.permessions import AdminPermission
 from users.utils import send_message
 
 User = get_user_model()
@@ -48,7 +49,6 @@ class OrderDetailAPIView(RetrieveUpdateAPIView):
     serializer_class = OrderDetailSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     http_method_names = ['get', 'put']
-
 
     def list(self, request, *args, **kwargs):
         orders = self.get_queryset().order_by('date')
@@ -96,7 +96,7 @@ class PlaceAPIView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     http_method_names = ['post', 'put', 'delete']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminPermission]
 
 
 # SNACKS
@@ -110,7 +110,7 @@ class SnacksServiceAPIView(viewsets.ModelViewSet):
     queryset = SnacksService.objects.all()
     serializer_class = SnacksServiceSerializer
     http_method_names = ['post', 'put', 'delete']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminPermission]
 
 
 # DEVICES
@@ -124,5 +124,4 @@ class DevicesServiceAPIView(viewsets.ModelViewSet):
     queryset = DevicesService.objects.all()
     serializer_class = DevicesServiceSerializer
     http_method_names = ['post', 'put', 'delete']
-    permission_classes = [IsAuthenticated]
-
+    permission_classes = [AdminPermission]

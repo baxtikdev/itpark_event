@@ -1,8 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from users.models import Code
-
 User = get_user_model()
 
 
@@ -22,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "url": {"view_name": "api:user-detail", "lookup_field": "username"}
         }
+
 
 class UserOrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,11 +43,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
-class CodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Code
-        fields = ['user', 'number']
-
-
 class GetEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
+
+class LogOutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(max_length=255)

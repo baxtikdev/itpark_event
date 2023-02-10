@@ -1,28 +1,27 @@
 import random
 from dj_rest_auth.serializers import PasswordChangeSerializer
-from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
-from allauth.account.models import EmailAddress
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status
 from rest_framework.decorators import action
 from rest_framework.generics import UpdateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from users.permessions import IsOwnerOrReadOnly
-from users.serializers import RegisterSerializer, CodeSerializer, GetEmailSerializer, UserSerializer
-from users.models import ChangedPassword, Code
-from users.serializer import LogOutSerializer
+from users.serializers import RegisterSerializer, GetEmailSerializer, UserSerializer, LogOutSerializer
 from users.utils import send_email
 from rest_framework.generics import ListAPIView
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
@@ -90,6 +89,18 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 user_redirect_view = UserRedirectView.as_view()
 
+class LoginAPIView(TokenObtainPairView):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+        user = User.objects.filter(username=request.data.get('username')).first()
+        return Response({'perm': user.perm, "token": serializer.validated_data}, status=status.HTTP_200_OK)
+
 
 class RegisterAPIView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -100,7 +111,7 @@ class RegisterAPIView(generics.GenericAPIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             token = self.get_tokens_for_user(serializer.instance)
-            return Response(token, status=status.HTTP_201_CREATED)
+            return Response({'perm': 0, "token": token}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_tokens_for_user(self, user):
@@ -146,24 +157,17 @@ class PasswordChangeView(UpdateAPIView):
 
 
 class ResetPasswordView(CreateAPIView):
-    queryset = ChangedPassword.objects.all()
+    queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = GetEmailSerializer
-    # http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             password = self.generate_password()
-            user = User.objects.filter(email=serializer.data.get('email')).first()
+            user = self.get_queryset().filter(email=serializer.data.get('email')).first()
             if not user:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            changed_users = ChangedPassword.objects.filter(user=user).first()
-            if changed_users:
-                changed_users.password = password
-                changed_users.save()
-            else:
-                ChangedPassword.objects.create(user=user, password=password)
             user.set_password(password)
             user.save()
             send_email({'to_email': user.email, 'code': password})

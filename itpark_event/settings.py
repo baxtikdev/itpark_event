@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import datetime
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ppkt*xjf16j=ra!*y9q52&eurq+%dav_powfv_ah#9)e)#c-zr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+
+env = environ.Env()
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
+
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from .env
+    env.read_env(str(BASE_DIR / ".env"))
+
+# GENERAL
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#debug
+DEBUG = env.bool("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = "users.User"
@@ -112,15 +124,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'itpark_event.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 if DEBUG:
     DATABASES = {
@@ -225,8 +228,8 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     # "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SERVERS": [
-        {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
         {"url": "https://api.itcenter.uz", "description": "Production server"},
+        {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
     ],
     'SCHEMA_PATH_PREFIX': '/v1/',
 }
