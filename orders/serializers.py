@@ -17,6 +17,17 @@ class QuantitySerializer(serializers.ModelSerializer):
         exclude = ['order']
 
 
+class OrderBaseQuantitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quantity
+        exclude = ['order']
+
+
+class OrderQuantitySerializer(serializers.Serializer):
+    order_id = serializers.IntegerField(write_only=True, required=True)
+    snacks = OrderBaseQuantitySerializer(write_only=True, many=True, required=True)
+
+
 class DevicesServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DevicesService
@@ -33,15 +44,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         exclude = ('created_at', 'is_active', 'is_deleted')
-        # fields = ['user',
-        #           "theme",
-        #           "date",
-        #           "place",
-        #           "start_time",
-        #           "finish_time",
-        #           "people_number",
-        #           "comment"
-        #           ]
 
 
 class OrdersSerializer(serializers.ModelSerializer):
@@ -49,12 +51,13 @@ class OrdersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'date', 'title', 'start', 'end', 'user', 'is_active']
+        fields = ['id', 'title', 'start', 'end', 'user', 'is_active']
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True, many=False)
     devices = DevicesServiceSerializer(read_only=True, many=True)
+    snacks = SnacksServiceSerializer(read_only=True, many=True)
     place = PlaceSerializer(read_only=True, many=False)
 
     class Meta:

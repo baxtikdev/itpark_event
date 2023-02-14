@@ -20,7 +20,6 @@ class EventAdmin(admin.ModelAdmin):
     model = Order
     list_display = [
         "place",
-        "date",
         "is_active",
         "start",
         "end",

@@ -2,7 +2,8 @@ from django.conf import settings
 from rest_framework.routers import DefaultRouter, SimpleRouter
 from django.urls import path
 
-from orders.views import DevicesServiceAPIView, PlaceAPIView, SnacksServiceAPIView, OrderCreateAPIView
+from orders.views import DevicesServiceAPIView, PlaceAPIView, SnacksServiceAPIView, OrderCreateAPIView, \
+    OrderSnacksAPIView
 from users.views import UserViewSet, ResetPasswordView, LoginAPIView
 from users.views import RegisterAPIView, LogoutView, PasswordChangeView
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -17,6 +18,7 @@ router.register("order-create", OrderCreateAPIView)
 router.register("create-update-device", DevicesServiceAPIView)
 router.register("create-update-place", PlaceAPIView)
 router.register("create-update-snack", SnacksServiceAPIView)
+router.register("create-update-delete-ordersnacks", OrderSnacksAPIView)
 
 app_name = "api"
 urlpatterns = router.urls

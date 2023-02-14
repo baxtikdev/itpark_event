@@ -1,5 +1,6 @@
 from pprint import pprint
 
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,9 +9,11 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from orders.models import Place, DevicesService, SnacksService, Quantity, Order
 from orders.serializers import PlaceSerializer, DevicesServiceSerializer, \
-    SnacksServiceSerializer, OrdersSerializer, OrderDetailSerializer, QuantitySerializer, OrderCreateSerializer
+    SnacksServiceSerializer, OrdersSerializer, OrderDetailSerializer, OrderCreateSerializer, \
+    OrderQuantitySerializer
 
-from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView, \
+    DestroyAPIView
 from rest_framework.views import APIView
 from rest_framework import viewsets, status, permissions
 from django.db.models import Q, Count
@@ -29,7 +32,7 @@ User = get_user_model()
 
 
 class OrdersAPIView(ListAPIView):
-    queryset = Order.objects.all().order_by('date')
+    queryset = Order.objects.all()
     serializer_class = OrdersSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -47,16 +50,11 @@ class OrdersAPIView(ListAPIView):
 class OrderDetailAPIView(RetrieveUpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, AdminPermission]
     http_method_names = ['get', 'put']
 
-    def list(self, request, *args, **kwargs):
-        orders = self.get_queryset().order_by('date')
-        serializer = self.get_serializer(orders)
-        return Response(serializer.data)
-
     def get(self, request, *args, **kwargs):
-        order = self.get_queryset().filter(id=request.query_params.get('order_id')).first()
+        order = get_object_or_404(Order, pk=request.query_params.get('order_id'))
         serializer = self.get_serializer(order, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -73,8 +71,8 @@ class OrderCreateAPIView(viewsets.ModelViewSet):
         devices = request.query_params.get('devices')
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        order = Order.objects.filter(id=int(serializer.data['id'])).first()
         if devices:
-            order = Order.objects.filter(id=int(serializer.data['id'])).first()
             for i in devices.split(","):
                 device = DevicesService.objects.filter(id=int(i)).first()
                 order.devices.add(device)
@@ -82,7 +80,35 @@ class OrderCreateAPIView(viewsets.ModelViewSet):
         #     send_message({'to_email': request.user.email, 'body': "Post yaratildi"})
         # except:
         #     pass
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({"id": serializer.data.get('id')}, status=status.HTTP_200_OK)
+
+
+class OrderSnacksAPIView(viewsets.ModelViewSet):
+    queryset = Quantity.objects.all()
+    serializer_class = OrderQuantitySerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'put', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = request.data
+        snack_obj = []
+        for i in data.get('snacks'):
+            snack_obj.append(
+                Quantity(order_id=data.get('order_id'), snack_id=int(i.get('snack')), number=int(i.get('number'))))
+        Quantity.objects.bulk_create(snack_obj)
+        return Response(status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = request.data
+        for i in data.get('snacks'):
+            snack = Quantity.objects.filter(order_id=kwargs.get('pk'), snack_id=i.get('snack')).first()
+            snack.number = int(i.get('number'))
+            snack.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 # PLACES

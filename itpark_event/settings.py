@@ -23,7 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ppkt*xjf16j=ra!*y9q52&eurq+%dav_powfv_ah#9)e)#c-zr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-
+DATE_FORMAT = "%Y-%m-%d"
+TIME_FORMAT = "%H:%M"
 env = environ.Env()
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
 
@@ -197,9 +198,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
+
+DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M']
 
 USE_TZ = True
 
