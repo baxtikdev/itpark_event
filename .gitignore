@@ -8,7 +8,7 @@ media
 .env
 # C extensions
 *.so
-
+static_root
 # Distribution / packaging
 .Python
 build/
