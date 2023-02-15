@@ -91,12 +91,25 @@ MIDDLEWARE = [
 ]
 
 # CORS_URLS_REGEX = r"^/api/.*$"
-CORS_ORIGIN_ALLOW_ALL = True
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ALLOWED_ORIGINS = [
+    'https://api.itcenter.uz',
+    'http://localhost:3000',
+    'http://127.0.0.1:8000'
+]
 CORS_ORIGIN_WHITELIST = (
     'https://api.itcenter.uz',
     'http://localhost:3000',
     'http://127.0.0.1:8000'
 )
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://\w+\.api.center\.uz",
+]
 
 if DEBUG:
     INSTALLED_APPS += [
