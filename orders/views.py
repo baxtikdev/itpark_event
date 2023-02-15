@@ -1,9 +1,5 @@
-from pprint import pprint
-
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -12,9 +8,7 @@ from orders.serializers import PlaceSerializer, DevicesServiceSerializer, \
     SnacksServiceSerializer, OrdersSerializer, OrderDetailSerializer, OrderCreateSerializer, \
     OrderQuantitySerializer
 
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView, \
-    DestroyAPIView
-from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework import viewsets, status, permissions
 from django.db.models import Q, Count
 from django.contrib.auth import get_user_model

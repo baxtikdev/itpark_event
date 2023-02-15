@@ -90,6 +90,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# CORS_URLS_REGEX = r"^/api/.*$"
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    'https://api.itcenter.uz',
+    'http://localhost:3000',
+    'http://127.0.0.1:8000'
+)
+
 if DEBUG:
     INSTALLED_APPS += [
         "debug_toolbar",
@@ -124,7 +132,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'itpark_event.wsgi.application'
-
 
 if DEBUG:
     DATABASES = {
