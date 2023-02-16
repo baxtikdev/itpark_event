@@ -1,8 +1,11 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework.views import APIView
+
 from orders.models import Place, DevicesService, SnacksService, Quantity, Order
 from orders.serializers import PlaceSerializer, DevicesServiceSerializer, \
     SnacksServiceSerializer, OrdersSerializer, OrderDetailSerializer, OrderCreateSerializer, \
@@ -30,6 +33,10 @@ class OrdersAPIView(ListAPIView):
     serializer_class = OrdersSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        queryset = Order.objects.filter(is_deleted=False)
+        return queryset
+
     def get(self, request, *args, **kwargs):
         orders = self.get_queryset()
         place_id = self.request.query_params.get('place_id')
@@ -44,13 +51,28 @@ class OrdersAPIView(ListAPIView):
 class OrderDetailAPIView(RetrieveUpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, AdminPermission]
-    http_method_names = ['get', 'put']
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    http_method_names = ['get', 'put', 'patch']
 
     def get(self, request, *args, **kwargs):
         order = get_object_or_404(Order, pk=request.query_params.get('order_id'))
         serializer = self.get_serializer(order, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        order = get_object_or_404(Order, pk=request.query_params.get('order_id'))
+        stat = request.query_params.get('status')
+        if stat == 'accepted':
+            order.is_active = True
+        elif stat == 'rejected':
+            order.is_deleted = True
+        order.save()
+        # try:
+        #     send_message({'to_email': request.user.email, 'body': "Post yaratildi"})
+        # except:
+        #     pass
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class OrderCreateAPIView(viewsets.ModelViewSet):

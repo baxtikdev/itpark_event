@@ -18,10 +18,12 @@ class QuantityReview(admin.TabularInline):
 class EventAdmin(admin.ModelAdmin):
     inlines = [QuantityReview]
     model = Order
+    search_fields = ['place__name']
     list_display = [
         "place",
-        "is_active",
         "start",
         "end",
+        "is_active",
+        "is_deleted",
     ]
     list_filter = ["is_active", "is_deleted"]
