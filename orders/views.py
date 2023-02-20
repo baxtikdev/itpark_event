@@ -138,7 +138,7 @@ class PlaceAPIView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     http_method_names = ['post', 'put', 'delete']
-    permission_classes = [AdminPermission]
+    permission_classes = [IsAdminUser]
 
 
 # SNACKS
@@ -152,7 +152,7 @@ class SnacksServiceAPIView(viewsets.ModelViewSet):
     queryset = SnacksService.objects.all()
     serializer_class = SnacksServiceSerializer
     http_method_names = ['post', 'put', 'delete']
-    permission_classes = [AdminPermission]
+    permission_classes = [IsAdminUser]
 
 
 # DEVICES
@@ -166,4 +166,4 @@ class DevicesServiceAPIView(viewsets.ModelViewSet):
     queryset = DevicesService.objects.all()
     serializer_class = DevicesServiceSerializer
     http_method_names = ['post', 'put', 'delete']
-    permission_classes = [AdminPermission]
+    permission_classes = [IsAdminUser]
