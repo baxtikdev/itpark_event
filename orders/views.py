@@ -74,7 +74,6 @@ class OrderDetailAPIView(RetrieveUpdateAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-
 class OrderCreateAPIView(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderCreateSerializer
@@ -103,7 +102,7 @@ class OrderSnacksAPIView(viewsets.ModelViewSet):
     queryset = Quantity.objects.all()
     serializer_class = OrderQuantitySerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ['post', 'put', 'delete']
+    http_method_names = ["POST", "PUT", "DELETE"]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -127,7 +126,6 @@ class OrderSnacksAPIView(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-# PLACES
 class PlacesAPIView(ListAPIView):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
@@ -137,11 +135,10 @@ class PlacesAPIView(ListAPIView):
 class PlaceAPIView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
-    http_method_names = ['post', 'put', 'delete']
+    http_method_names = ["POST", "PUT", "DELETE"]
     permission_classes = [IsAdminUser]
 
 
-# SNACKS
 class SnacksAPIView(ListAPIView):
     queryset = SnacksService.objects.all()
     serializer_class = SnacksServiceSerializer
@@ -151,11 +148,10 @@ class SnacksAPIView(ListAPIView):
 class SnacksServiceAPIView(viewsets.ModelViewSet):
     queryset = SnacksService.objects.all()
     serializer_class = SnacksServiceSerializer
-    http_method_names = ['post', 'put', 'delete']
+    http_method_names = ["POST", "PUT", "DELETE"]
     permission_classes = [IsAdminUser]
 
 
-# DEVICES
 class DevicesAPIView(ListAPIView):
     queryset = DevicesService.objects.all()
     serializer_class = DevicesServiceSerializer
@@ -165,5 +161,5 @@ class DevicesAPIView(ListAPIView):
 class DevicesServiceAPIView(viewsets.ModelViewSet):
     queryset = DevicesService.objects.all()
     serializer_class = DevicesServiceSerializer
-    http_method_names = ['post', 'put', 'delete']
+    http_method_names = ["POST", "PUT", "DELETE"]
     permission_classes = [IsAdminUser]
