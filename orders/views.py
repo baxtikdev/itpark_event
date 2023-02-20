@@ -1,18 +1,15 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
-from rest_framework.views import APIView
 
 from orders.models import Place, DevicesService, SnacksService, Quantity, Order
 from orders.serializers import PlaceSerializer, DevicesServiceSerializer, \
     SnacksServiceSerializer, OrdersSerializer, OrderDetailSerializer, OrderCreateSerializer, \
-    OrderQuantitySerializer
+    OrderQuantitySerializer, OrderUpdateSerializer
 
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
-from rest_framework import viewsets, status, permissions
+from rest_framework.generics import ListAPIView
+from rest_framework import viewsets, status
 from django.db.models import Q, Count
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
@@ -22,42 +19,34 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
-from users.permessions import AdminPermission
+from users.permessions import AdminPermission, IsOwnerOrReadOnly
 from users.utils import send_message
 
 User = get_user_model()
 
 
-class OrdersAPIView(ListAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrdersSerializer
+class OrderDetailAPIView(viewsets.ModelViewSet):
+    queryset = Order.objects.filter(is_deleted=False)
+    serializer_class = OrderDetailSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    http_method_names = ['get']
 
-    def get_queryset(self):
-        queryset = Order.objects.filter(is_deleted=False)
-        return queryset
-
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         orders = self.get_queryset()
         place_id = self.request.query_params.get('place_id')
         if place_id is not None:
             queryset = orders.filter(place_id=place_id)
         else:
             queryset = orders.filter(place=Place.objects.all().first())
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = OrdersSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
-class OrderDetailAPIView(RetrieveUpdateAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderDetailSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    http_method_names = ['get', 'put', 'patch']
-
-    def get(self, request, *args, **kwargs):
-        order = get_object_or_404(Order, pk=request.query_params.get('order_id'))
-        serializer = self.get_serializer(order, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class OrderDetailUpdateAPIView(viewsets.ModelViewSet):
+    queryset = Order.objects.filter(is_deleted=False)
+    serializer_class = OrderUpdateSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ['put', "patch"]
 
     def patch(self, request, *args, **kwargs):
         order = get_object_or_404(Order, pk=request.query_params.get('order_id'))
@@ -72,7 +61,6 @@ class OrderDetailAPIView(RetrieveUpdateAPIView):
         # except:
         #     pass
         return Response(status=status.HTTP_200_OK)
-
 
 
 class OrderCreateAPIView(viewsets.ModelViewSet):

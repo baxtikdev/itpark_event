@@ -54,6 +54,13 @@ class OrdersSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'start', 'end', 'user', 'is_active']
 
 
+class OrderUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Order
+        fields = ['id', 'title', 'place', 'start', 'end', 'devices','people_number']
+
+
 class OrderDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True, many=False)
     devices = DevicesServiceSerializer(read_only=True, many=True)

@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from django.urls import path
 
 from orders.views import DevicesServiceAPIView, PlaceAPIView, SnacksServiceAPIView, OrderCreateAPIView, \
-    OrderSnacksAPIView
+    OrderSnacksAPIView, OrderDetailAPIView, OrderDetailUpdateAPIView
 from users.views import UserViewSet, ResetPasswordView, LoginAPIView
 from users.views import RegisterAPIView, LogoutView, PasswordChangeView
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -15,6 +15,8 @@ else:
 
 router.register("users", UserViewSet)
 router.register("order-create", OrderCreateAPIView)
+router.register("orders", OrderDetailAPIView)
+router.register("order-detail-update", OrderDetailUpdateAPIView)
 router.register("create-update-device", DevicesServiceAPIView)
 router.register("create-update-place", PlaceAPIView)
 router.register("create-update-snack", SnacksServiceAPIView)
