@@ -26,10 +26,14 @@ User = get_user_model()
 
 
 class OrderDetailAPIView(viewsets.ModelViewSet):
-    queryset = Order.objects.filter(is_deleted=False)
+    queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     http_method_names = ['get']
+
+    def get_queryset(self):
+        queryset = self.queryset.filter(is_deleted=False)
+        return queryset
 
     def list(self, request, *args, **kwargs):
         orders = self.get_queryset()
@@ -48,8 +52,8 @@ class OrderDetailUpdateAPIView(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
     http_method_names = ['put', "patch"]
 
-    def patch(self, request, *args, **kwargs):
-        order = get_object_or_404(Order, pk=request.query_params.get('order_id'))
+    def partial_update(self, request, *args, **kwargs):
+        order = get_object_or_404(Order, pk=kwargs.get('pk'))
         stat = request.query_params.get('status')
         if stat == 'accepted':
             order.is_active = True
