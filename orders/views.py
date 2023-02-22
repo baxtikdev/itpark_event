@@ -21,6 +21,7 @@ from django.views.decorators.vary import vary_on_cookie
 
 from users.permessions import AdminPermission, IsOwnerOrReadOnly
 from users.utils import send_message
+from .tasks import send_feedback_email_task
 
 User = get_user_model()
 
@@ -36,6 +37,9 @@ class OrderDetailAPIView(viewsets.ModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
+        send_feedback_email_task.delay(
+            'ergashevb111@gmail.com', "Post yaratildi 1111"
+        )
         orders = self.get_queryset()
         place_id = self.request.query_params.get('place_id')
         if place_id is not None:
@@ -92,6 +96,10 @@ class OrderCreateAPIView(viewsets.ModelViewSet):
         #     send_message({'to_email': request.user.email, 'body': "Post yaratildi"})
         # except:
         #     pass
+
+        send_feedback_email_task.delay(
+            request.user.email, "Post yaratildi"
+        )
         return Response({"id": serializer.data.get('id')}, status=status.HTTP_200_OK)
 
 

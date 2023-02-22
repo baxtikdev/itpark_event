@@ -72,6 +72,8 @@ INSTALLED_APPS = [
     "drf_spectacular",
 
     'rest_framework_simplejwt',
+    'django_celery_results',
+    'django_celery_beat',
 
     "users",
     "orders",
@@ -270,10 +272,15 @@ SIMPLE_JWT = {
 
 CACHE_TTL = 60 * 5
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = 'server2.ahost.uz'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'no-reply@itcenter.uz'
 EMAIL_HOST_PASSWORD = '!1234567A@event'
+
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
