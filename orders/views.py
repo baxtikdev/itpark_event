@@ -54,6 +54,10 @@ class OrderDetailUpdateAPIView(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         order = get_object_or_404(Order, pk=kwargs.get('pk'))
+        if order.is_deleted:
+            order.is_active = False
+            order.save()
+            return Response(status=status.HTTP_404_NOT_FOUND)
         stat = request.query_params.get('status')
         if stat == 'accepted':
             order.is_active = True
@@ -114,6 +118,9 @@ class OrderSnacksAPIView(viewsets.ModelViewSet):
         data = request.data
         for i in data.get('snacks'):
             snack = Quantity.objects.filter(order_id=kwargs.get('pk'), snack_id=i.get('snack')).first()
+            if snack is None:
+                Quantity.objects.create(order_id=kwargs.get('pk'), snack_id=i.get('snack'), number=int(i.get('number')))
+                continue
             snack.number = int(i.get('number'))
             snack.save()
         return Response(status=status.HTTP_200_OK)
