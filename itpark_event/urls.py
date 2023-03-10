@@ -8,10 +8,10 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
-    # path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    # path(
-    #     "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    # ),
+    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    path(
+        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
+    ),
     path('admin/', admin.site.urls),
     # User management
     path("users/", include("users.urls", namespace="users")),
@@ -28,12 +28,12 @@ urlpatterns += [
     path("v1/api/", include("itpark_event.api_router")),
     # DRF auth token
     # path("auth-token/", obtain_auth_token),
-    # path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
-    # path(
-    #     "api/docs/",
-    #     SpectacularSwaggerView.as_view(url_name="api-schema"),
-    #     name="api-docs",
-    # ),
+    path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="api-schema"),
+        name="api-docs",
+    ),
 ]
 
 if settings.DEBUG:
