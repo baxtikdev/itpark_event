@@ -9,7 +9,7 @@ from orders.serializers import PlaceSerializer, DevicesServiceSerializer, \
     OrderQuantitySerializer, OrderUpdateSerializer
 
 from rest_framework.generics import ListAPIView
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from django.db.models import Q, Count
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
@@ -37,9 +37,9 @@ class OrderDetailAPIView(viewsets.ModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        send_feedback_email_task.delay(
-            'ergashevb111@gmail.com', "Post yaratildi 1111"
-        )
+        # send_feedback_email_task.delay(
+        #     'ergashevb111@gmail.com', "Post yaratildi 1111"
+        # )
         orders = self.get_queryset()
         place_id = self.request.query_params.get('place_id')
         if place_id is not None:
