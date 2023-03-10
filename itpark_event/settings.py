@@ -99,20 +99,21 @@ else:
     CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ALLOWED_ORIGINS = [
-    # 'https://itcenter-event.netlify.app/',
     'https://api.itcenter.uz',
+    'https://hub.itcenter.uz',
     'http://localhost:3000',
-    'http://127.0.0.1:8000'
+    'http://127.0.0.1:8000',
 ]
 CORS_ORIGIN_WHITELIST = (
-    # 'https://itcenter-event.netlify.app/',
+    'https://hub.itcenter.uz',
     'https://api.itcenter.uz',
     'http://localhost:3000',
-    'http://127.0.0.1:8000'
+    'http://127.0.0.1:8000',
 )
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://\w+\.api.center\.uz",
+    r"^https://\w+\.api.itcenter\.uz",
+    r"^https://\w+\.hub.itcenter\.uz",
 ]
 
 if DEBUG:
@@ -216,6 +217,16 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# ADMIN
+# ------------------------------------------------------------------------------
+# Django Admin URL.
+ADMIN_URL = "hubadmin/"
+# https://docs.djangoproject.com/en/dev/ref/settings/#admins
+ADMINS = [("""baxtikdev""", "baxtikdev@example.com")]
+# https://docs.djangoproject.com/en/dev/ref/settings/#managers
+MANAGERS = ADMINS
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
