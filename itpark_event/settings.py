@@ -218,16 +218,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# ADMIN
-# ------------------------------------------------------------------------------
-# Django Admin URL.
-ADMIN_URL = "hubadmin/"
-# https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("""baxtikdev""", "baxtikdev@example.com")]
-# https://docs.djangoproject.com/en/dev/ref/settings/#managers
-MANAGERS = ADMINS
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
