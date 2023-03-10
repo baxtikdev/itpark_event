@@ -12,7 +12,7 @@ urlpatterns = [
     # path(
     #     "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     # ),
-    path('settings.ADMIN_URL', admin.site.urls),
+    path('hubadmin/', admin.site.urls),
     # User management
     path("users/", include("users.urls", namespace="users")),
     path("orders/", include("orders.urls", namespace="orders")),
